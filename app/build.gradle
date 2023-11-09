@@ -1,0 +1,73 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    signingConfigs {
+        release {
+            storeFile file('D:\\_CODE\\self\\demo01.jks')
+            storePassword '369369'
+            keyAlias 'demo01'
+            keyPassword '369369'
+        }
+    }
+    compileSdk 32
+
+    defaultConfig {
+        applicationId 'com.self.demo01'
+        minSdk 21
+        targetSdk 32
+        versionCode 2
+        versionName "1.1"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+
+    android.applicationVariants.all {
+        variant ->
+            variant.outputs.all {
+                outputFileName = "SunmiIotAbilityCallDemo" + defaultConfig.versionName + "_" + buildType.name + ".apk"
+            }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        release {
+            debuggable true
+            minifyEnabled false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.navigation:navigation-fragment:2.5.3'
+    implementation 'androidx.navigation:navigation-ui:2.5.3'
+    implementation files('libs\\acssmc-1.1.3.jar')
+    implementation files('libs\\SunmiReader.jar')
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
+
+    implementation 'com.sunmi:ThingAdapterAuthorize-Android:1.0.2'
+    implementation 'com.sunmi:ThingAdapterManager:1.0.2'
+    implementation 'com.sunmi:thingService.iotsdk:1.2.0'
+}
