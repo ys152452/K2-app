@@ -23,8 +23,8 @@ public class Application extends android.app.Application {
     public static List<ThingService> scannerList;
     public static List<ThingService> msrList;
     public static List<ThingDevice> deviceList;
-    private String appId = "自己的";
-    private String appKey = "自己的";
+    private String appId = "xxxx";
+    private String appKey = "xxxx";
     public static Application app;
 
     @Override

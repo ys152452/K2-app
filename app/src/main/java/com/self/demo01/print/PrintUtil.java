@@ -153,6 +153,7 @@ public class PrintUtil {
         list.add(getGoLine(1));
         list.add(getDemoGuideTextPrint());
         list.add(getGoLine(4));
+        list.add(cutPaper());
         return list;
     }
 
@@ -328,6 +329,12 @@ public class PrintUtil {
         printTextParamsNew.align = 1;
         request.command = printTextParamsNew.COMMAND;
         request.params = entityToMap(printTextParamsNew);
+        return request;
+    }
+    public static CommandRequest cutPaper() {
+        CommandRequest request = new CommandRequest();
+        request.command = "cut_paper";
+        request.params = null;
         return request;
     }
 

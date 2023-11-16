@@ -27,12 +27,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.self.demo01.print.CommandRequest;
 import com.self.demo01.print.PrintUtil;
 import com.self.demo01.utils.LogUtil;
+import com.self.demo01.utils.AidlUtil;
 import com.sunmi.thingservice.sdk.IResponseCallback;
 import com.sunmi.thingservice.sdk.IServiceEventListener;
 import com.sunmi.thingservice.sdk.ThingSDK;
 import com.sunmi.thingservice.sdk.ThingService;
-
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String DATA = "data";
     private static final String SOURCE = "source_byte";
 
+    String types = "";
+
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         app = this;
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         filter = new IntentFilter(ACTION_DATA_CODE_RECEIVED);
         sms = new SMSReceiver();
         registerReceiver(sms, filter);
+        AidlUtil.getInstance().connectPrinterService(this);
         initView();
     }
 
@@ -70,11 +74,19 @@ public class MainActivity extends AppCompatActivity {
             String arr = Arrays.toString(intent.getByteArrayExtra(SOURCE));
 
             Log.d("TTTT", "读手牌：" + code + "---" + arr);
+            Log.d("获取传参","---------"+types+"----------");
             WebView webView = (WebView) findViewById(R.id.web_view);
+            if(code.indexOf("000026") != -1){
+                code =  code.split("000026")[1];
+            }
+            String finalCode = code;
             runOnUiThread(() -> {
-                webView.loadUrl("javascript:recK2Msg('" + code + "')");
+                webView.loadUrl("javascript:"+types+"('" + finalCode + "')");
+                webView.loadUrl("javascript:handClick()");
             });
         }
+
+
     }
     private class MyWebViewClient extends WebViewClient{
         @Override
@@ -99,7 +111,9 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         WebView webView = (WebView) findViewById(R.id.web_view);
 //        String url = "file:///android_asset/index.html";
-        String url = "http://172.16.9.79:8080/#/";
+//        String url = "http://172.16.8.254:8080/";
+        String url = "https://trade-app.zkctd.cn";
+
 
         WebSettings webSettings = webView.getSettings();
         //可以访问https
@@ -148,8 +162,12 @@ public class MainActivity extends AppCompatActivity {
             LogUtil.e(TAG, "webview send-----:" + msg);
             Toast.makeText(app, "webview打印：" + msg, Toast.LENGTH_SHORT).show();
         }
-    }
+        @JavascriptInterface
+        public void typesClick(String type){
+            types = type;
+        }
 
+    }
     private synchronized void print(CommandRequest request) {
         if (Application.printerList == null || Application.printerList.size() == 0) {
             Toast.makeText(this, "获取打印机失败", Toast.LENGTH_SHORT).show();
@@ -176,9 +194,12 @@ public class MainActivity extends AppCompatActivity {
                             builder.append(s + "  :  " + data.get(s) + "；");
                         }
                         LogUtil.e(TAG, "res:" + builder.toString() + "    ;" + t1);
+                        ThingSDK.getInstance().executeCommand(service, "{command: 'cutPaper'}", null);
                     }
+                    AidlUtil.getInstance().cutPaper();
                 }
             });
+
         } catch (RemoteException e) {
             e.printStackTrace();
         }
