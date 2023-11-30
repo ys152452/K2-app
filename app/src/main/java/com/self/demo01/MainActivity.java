@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -33,6 +34,7 @@ import com.sunmi.thingservice.sdk.IServiceEventListener;
 import com.sunmi.thingservice.sdk.ThingSDK;
 import com.sunmi.thingservice.sdk.ThingService;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -112,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         WebView webView = (WebView) findViewById(R.id.web_view);
 //        String url = "file:///android_asset/index.html";
 //        String url = "http://172.16.8.254:8080/";
+//        String url = "http://172.16.9.79:8080/";
         String url = "https://trade-app.zkctd.cn";
 
 
@@ -155,7 +158,11 @@ public class MainActivity extends AppCompatActivity {
         }
         @JavascriptInterface
         public void doPrint(String b64) {
-            print(PrintUtil.getPicRequest(b64));
+//            print(PrintUtil.getPicRequest(b64));
+            LogUtil.e(TAG, "webview send-----:" + b64);
+            byte[] bytes = android.util.Base64.decode(b64, android.util.Base64.DEFAULT);
+            AidlUtil.getInstance().printBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+            AidlUtil.getInstance().cutPaper();
         }
         @JavascriptInterface
         public void doToast(String msg) {
@@ -168,44 +175,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-    private synchronized void print(CommandRequest request) {
-        if (Application.printerList == null || Application.printerList.size() == 0) {
-            Toast.makeText(this, "获取打印机失败", Toast.LENGTH_SHORT).show();
-            return;
-        } else {
-            LogUtil.e(TAG, "sass send------:" + PrintUtil.gson.toJson(Application.printerList.get(0)));
-        }
-        String callUuid = null;
-        ThingService service = Application.printerList.get(0);
-
-        final long time = SystemClock.elapsedRealtime();
-        LogUtil.e(TAG, "sass send:" + SystemClock.elapsedRealtime());
-        try {
-            callUuid = ThingSDK.getInstance().execute(service, ThingSDK.ACTION_TYPE_COMMAND, ThingSDK.ACTION_EXECUTE, PrintUtil.gson.toJson(request), new IResponseCallback.Stub() {
-                @Override
-                public void response(String uuid, Map data) throws RemoteException {
-                    LogUtil.e(TAG, "sass receive:" + SystemClock.elapsedRealtime());
-                    LogUtil.e(TAG, uuid + ";" + time);
-                    long t1 = SystemClock.elapsedRealtime();
-                    LogUtil.e(TAG, time + ";" + t1 + "  ; " + (t1 - time));
-                    if (data != null) {
-                        StringBuilder builder = new StringBuilder("print-->");
-                        for (Object s : data.keySet()) {
-                            builder.append(s + "  :  " + data.get(s) + "；");
-                        }
-                        LogUtil.e(TAG, "res:" + builder.toString() + "    ;" + t1);
-                        ThingSDK.getInstance().executeCommand(service, "{command: 'cutPaper'}", null);
-                    }
-                    AidlUtil.getInstance().cutPaper();
-                }
-            });
-
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        LogUtil.e(TAG, " print call :" + callUuid + ";" + PrintUtil.gson.toJson(request));
-    }
-
     IServiceEventListener iServiceEventListener = new IServiceEventListener.Stub() {
         @Override
         public void onEvent(String deviceId, String serviceId, String eventParam) throws RemoteException {

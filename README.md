@@ -164,8 +164,8 @@ onCreate中建立监听
         LogUtil.i(TAG, "ThingSDK init result: " + initResult);
     }
 ```
-打印方法
-> 考虑到排版美观和可控，采用图片打印，即前端页面=>图片=>base64
+打印方法1
+> 考虑到排版美观和可控，采用图片打印，即前端页面=>图片=>base64 如果使用aidl可能会使此方法失效
 ```java
     private synchronized void print(CommandRequest request) {
         if (Application.printerList == null || Application.printerList.size() == 0) {
@@ -202,6 +202,20 @@ onCreate中建立监听
         LogUtil.e(TAG, " print call :" + callUuid + ";" + PrintUtil.gson.toJson(request));
     }
 ```
+
+打印方法2
+> 使用aidl中的打印图片方法，考虑到跨域以及排版，前端页面=>图片=>base64=>安卓转Bitmap
+```java
+        @JavascriptInterface
+        public void doPrint(String b64) {
+            byte[] bytes = android.util.Base64.decode(b64, android.util.Base64.DEFAULT);
+            AidlUtil.getInstance().printBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+            // 切纸
+            AidlUtil.getInstance().cutPaper();
+        }
+```
+
+
 切纸
 > <b>官方的IOT标准能力sdk以及提供的demo，包括新版的商米内置打印机sdk中，并没有发现有触发切纸的操作，结束打印后需要人工撕小票，所以需要参考旧版SDK文档，通过AIDL的方式连接打印服务</b>
 > 
