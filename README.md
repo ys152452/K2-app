@@ -62,7 +62,7 @@ Android作为载体，并负责与硬件交互，页面交给uniapp开发，打�
         String url = "http://172.16.9.79:8080/#/";
         WebSettings webSettings = webView.getSettings();
 
-        // 可以访问https
+        // 加载网络图片
         webSettings.setBlockNetworkImage(false);
         // 开启JavaScript
         webSettings.setJavaScriptEnabled(true);
